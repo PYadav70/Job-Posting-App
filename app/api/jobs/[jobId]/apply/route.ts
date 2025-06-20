@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params:{ jobId: string } }
+  { params }: { params: { jobId: string } }
 ) {
   const session = await auth();
 
@@ -13,7 +13,8 @@ export async function POST(
   }
 
   try {
-    const { jobId } = await params;
+    const { jobId } = params;
+
     const job = await prisma.job.findUnique({ where: { id: jobId } });
 
     if (!job) {
@@ -22,7 +23,7 @@ export async function POST(
 
     const existingApplication = await prisma.application.findFirst({
       where: {
-        jobId: jobId,
+        jobId,
         userId: session.user.id,
       },
     });
@@ -35,7 +36,7 @@ export async function POST(
 
     const application = await prisma.application.create({
       data: {
-        jobId: jobId,
+        jobId,
         userId: session.user.id,
         status: "PENDING",
       },
@@ -43,6 +44,7 @@ export async function POST(
 
     return NextResponse.json(application);
   } catch (error) {
+    console.error("Error applying to job:", error); // ✅ avoids unused error warning
     return new NextResponse("Internal server error", { status: 500 });
   }
 }
