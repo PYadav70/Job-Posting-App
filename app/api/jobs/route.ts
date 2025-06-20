@@ -2,42 +2,43 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+// POST: Create a new job
+export async function POST(request: Request) {
+  const session = await auth();
 
-export async function POST(request:Request){
-    const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
+  }
 
-    if(!session?.user || session.user.id){
-        return NextResponse.redirect(new URL("/auth/signin", request.url))
-    }
-    try {
-        const data = await request.json()
-        const job = await prisma.job.create({
-            data:{
-                ...data,
-                postedById: session.user.id
-            }
-        })
-        return NextResponse.json(job);
+  try {
+    const data = await request.json();
 
-    } catch (error) {
-        console.log("error creating job", error)
-        return new NextResponse("Internal server",{status:500})
-    }
+    const job = await prisma.job.create({
+      data: {
+        ...data,
+        postedById: session.user.id,
+      },
+    });
+
+    return NextResponse.json(job);
+  } catch (error) {
+    console.error("Error creating job:", error);
+    return new NextResponse("Internal server error", { status: 500 });
+  }
 }
 
+// GET: Fetch all jobs
+export async function GET() {
+  try {
+    const jobs = await prisma.job.findMany({
+      orderBy: {
+        postedAt: "desc",
+      },
+    });
 
-export async function GET(request:Request){
-    try{
-        const jobs = await prisma.job.findMany({
-            orderBy:{
-                postedAt:"desc",
-            }
-        })
-        return NextResponse.json(jobs);
-    
-
-    } catch (error) {
-        console.log("error creating job", error)
-        return new NextResponse("Internal server",{status:500})
-    }
+    return NextResponse.json(jobs);
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    return new NextResponse("Internal server error", { status: 500 });
+  }
 }

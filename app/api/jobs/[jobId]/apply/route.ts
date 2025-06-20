@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ jobId: string }> }
+  { params }: { params:{ jobId: string } }
 ) {
   const session = await auth();
 
   if (!session?.user || !session.user.id) {
-    return NextResponse.redirect(new URL("/auth/singin", request.url));
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 
   try {
