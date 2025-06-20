@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function POST(
-  request: Request,
-  context: { params: { jobId: string } }
+  request: NextRequest,
+  { params }: { params: { jobId: string } }
 ) {
   const session = await auth();
 
@@ -13,7 +13,7 @@ export async function POST(
   }
 
   try {
-    const jobId = context.params.jobId;
+    const jobId = params.jobId;
 
     const job = await prisma.job.findUnique({
       where: { id: jobId },
@@ -45,8 +45,8 @@ export async function POST(
     });
 
     return NextResponse.json(application);
-  } catch (err) {
-    console.error("Error applying to job:", err);
+  } catch (error) {
+    console.error("Error applying to job:", error);
     return new NextResponse("Internal server error", { status: 500 });
   }
 }
