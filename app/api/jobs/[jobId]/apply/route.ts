@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: { jobId: string } }
+  context: { params: { jobId: string } }
 ) {
   const session = await auth();
 
@@ -13,9 +13,11 @@ export async function POST(
   }
 
   try {
-    const { jobId } = params;
+    const jobId = context.params.jobId;
 
-    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+    });
 
     if (!job) {
       return new NextResponse("Job not found", { status: 404 });
@@ -29,7 +31,7 @@ export async function POST(
     });
 
     if (existingApplication) {
-      return new NextResponse("You already have applied for this job", {
+      return new NextResponse("You already applied for this job", {
         status: 400,
       });
     }
@@ -43,8 +45,8 @@ export async function POST(
     });
 
     return NextResponse.json(application);
-  } catch (error) {
-    console.error("Error applying to job:", error); // ✅ avoids unused error warning
+  } catch (err) {
+    console.error("Error applying to job:", err);
     return new NextResponse("Internal server error", { status: 500 });
   }
 }
